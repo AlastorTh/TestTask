@@ -9,7 +9,7 @@ import (
 )
 
 type Server struct {
-	srv    http.Server
+	http.Server
 	mut    sync.Mutex
 	queues map[string][]string
 }
@@ -56,22 +56,6 @@ func (s *Server) handleRequest(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getRoot(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("got / request\n")
-	//io.WriteString(w, "This is my website!\n")
-
-	switch r.Method {
-	case http.MethodGet:
-		io.WriteString(w, "sorry not sorry\n")
-
-	case http.MethodPost:
-		if err := r.ParseForm(); err != nil {
-			fmt.Fprintf(w, "ParseForm() err: %v", err)
-			return
-		}
-	}
-}
-
 func main() {
 	port := flag.Int("port", 8080, "port to start the server on")
 	flag.Parse()
@@ -81,10 +65,10 @@ func main() {
 		*port = 8080
 	}
 	mux := http.NewServeMux()
-	s := Server{srv: http.Server{Addr: fmt.Sprintf(":%d", *port), Handler: mux}, queues: make(map[string][]string)}
+	s := Server{http.Server{Addr: fmt.Sprintf(":%d", *port), Handler: mux}, sync.Mutex{}, make(map[string][]string)}
 	mux.HandleFunc("/", s.handleRequest)
 	//err := http.ListenAndServe(*port, mux)
 
-	fmt.Println(s.srv.ListenAndServe())
+	fmt.Println(s.ListenAndServe())
 
 }
